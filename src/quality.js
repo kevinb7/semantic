@@ -55,3 +55,59 @@ We're trying to do the following things with this type of analysis:
 - provide suggestions for simplifying the code
 
  */
+
+import { traverse } from 'estraverse'
+import esutils from 'esutils'
+
+
+esutils.ast.isFunction = function(node) {
+    return node.type === "FunctionExpression" || node.type === "FunctionDeclaration";
+};
+
+
+var getFunctionName = function(node, parent) {
+    if (node.type === "FunctionExpression") {
+        if (parent.type === "VariableDeclarator") {
+            return parent.id.name;
+        } else if (parent.type === "AssignmentExpression") {
+            return parent.left.name;
+        }
+    }
+    return null;
+};
+
+
+var specialFunctions = [
+    "draw", 
+    "mousePressed", "mouseReleased", "mouseMoved", "mouseDragged", "mouseClicked",
+    "keyPressed", "keyReleased"
+];
+
+var findFunctionDefinitions = ast => {
+    
+    // TODO: handle anonymous functions
+    var scopes = [];
+
+    traverse(ast, {
+        enter: (node, parent) => {
+            if (esutils.ast.isFunction(node)) {
+                scopes.push(getFunctionName(node, parent));
+            }
+        },
+        leave: (node, parent) => {
+
+            if (esutils.ast.isFunction(node)) {
+                scopes.pop();
+            }
+            
+            if (node.type === "FunctionExpression") {
+                var name = getFunctionName(node, parent);
+                var scopeName = scopes[scopes.length - 1];
+                var smell = !!scopeName ? " - smell" : "";
+                console.log(`function, name = ${name} (${scopeName})${smell}`);
+            }
+        }
+    });
+};
+
+export { findFunctionDefinitions }
