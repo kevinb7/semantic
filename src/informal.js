@@ -15,6 +15,7 @@ String.prototype[prefix] = function(end) {
 };
 
 
+// TODO: worry camelCase or .toLowerCase() and call it a day?
 var suffixGroups = [
     [ "X", "Y" ],       // position
     [ "W", "H" ],       // size
@@ -25,6 +26,7 @@ var prefixGroups = [
     [ "min", "max" ]    // range
 ];
 
+var suffixes = [ "Pos", "Loc" ];
 
 var assert = console.assert;
 
@@ -77,16 +79,24 @@ var informalObjects = function(variables) {
             var first = variables[i];
             var second = variables[j];
 
+            for (let p of prefixGroups) {
+                var s = findCommonSuffix([first, second], p);
+                if (s) {
+                    suffixSet.add(s);
+                }
+            }
+            
             for (let s of suffixGroups) {
                 var p = findCommonPrefix([first, second], s);
                 if (p) {
                     prefixSet.add(p);
                 }
             }
-
-            for (let p of prefixGroups) {
-                var s = findCommonSuffix([first, second], p);
-                if (s) {
+            
+            // may include other things in the "Pos" object that shouldn't be
+            // e.g. endPos
+            for (let s of suffixes) {
+                if (first.endsWith(s) && second.endsWith(s)) {
                     suffixSet.add(s);
                 }
             }

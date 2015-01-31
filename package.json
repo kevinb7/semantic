@@ -18,7 +18,9 @@
   "homepage": "https://github.com/kevinb7/semantic",
   "dependencies": {
     "6to5": "^3.1.1",
+    "escodegen": "^1.6.1",
     "esprima": "^1.2.3",
-    "estraverse": "^1.9.1"
+    "estraverse": "^1.9.1",
+    "lodash": "^3.0.1"
   }
 }
