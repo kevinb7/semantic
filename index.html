@@ -12,6 +12,16 @@
             width: 600px;
             margin: auto;
         }
+        
+        .code {
+            font-family: monospace;
+            white-space: pre;
+            font-size: 14px;
+        }
+        
+        h3 {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -36,10 +46,179 @@
         <li>What informal data structures are there?  Are there other programs with the same structures?</li>
         <li>Is there shared/duplicate code between programs?</li>
     </ul>
-    <h2>Demo</h2>
     <p>
-        Coming soon!
+        Source Code: <a href="https://github.com/kevinb7/semantic">https://github.com/kevinb7/semantic</a>
     </p>
+    <h2>Examples</h2>
+    <h3>code: animated_shapes</h3>
+    <div class="code">var sunX = 300;
+var sunY = 100;
+
+var ballX, ballY, ballRadius;
+
+// users might re-defined these variables... as long as they don't get redefined inside
+// an event handler or the draw loop we're okay
+ballX = 50;
+ballY = 300;
+ballRadius = 100;
+
+var skyBlue = color(64,128,255);
+var grassGreen = color(0, 191, 0);
+var ballColor = color(255, 0, 0);
+
+var start = false;
+
+noStroke();
+
+draw = function() {
+    background(skyBlue);
+    
+    fill(grassGreen);
+    rect(0,350,400,50);
+    
+    fill(ballColor);
+    ellipse(ballX, ballY, ballRadius, ballRadius);
+    
+    if (start) {
+        // is "start" ever true?
+        // Yes, it gets set to true on line 68 inside of the keyPressed
+        // if you press a key ballX will animate
+        ballX += 1.0;
+    }
+    
+    if (keyIsPressed) {
+        // active animation
+        if (keyCode === LEFT) {
+            ballX -= 1.0;
+        }
+        if (keyCode === RIGHT) {
+            ballX += 1.0;
+        }
+    }
+};
+
+mouseClicked = function() {
+    if (dist(mouseX, mouseY, ballX, ballY) < ballRadius) {
+        // passive animation
+        // toggle pattern
+        if (start) {
+            start = false;
+        } else {
+            start = true;
+        }
+        
+        // equivalent
+        // start = !start;  // toggle pattern
+        // we might also have a half toggle pattern
+        // a.k.a initiator pattern
+        // if (!start) { start = true; } // or something like that
+    }
+};
+
+// this is als an active animation
+keyPressed = function() {
+    start = true;
+};
+
+keyReleased = function() {
+    start = false;
+};
+    </div>
+    <h3>output</h3>
+    <div class="code">// informal data structure detection
+        
+{ 
+    prefixDict: { 
+        sun: [ 'sunX', 'sunY' ],
+        ball: [ 'ballX', 'ballY', 'ballRadius', 'ballColor' ] 
+    },
+    suffixDict: {} 
+}
+
+// redundant if statements
+        
+redundant if statements
+"start" = "start"
+
+//redundant binary expressions (used as arguments)
+
+(None)
+
+// find all drawing functions
+// functions contain drawing commands, e.g. line, ellipse, etc.
+        
+name = draw (parent = undefined)
+"draw" is a drawing function
+name = mouseClicked (parent = undefined)
+name = keyPressed (parent = undefined)
+name = keyReleased (parent = undefined)
+
+// find mutated variables used in animation
+        
+mutated variables = ballX,start
+ballX is animating the x parameter of ellipse
+    </div>
+
+    <h3>code: bug_game</h3>
+    <div class="code">Please see <a href="https://www.khanacademy.org/computer-programming/spin-off-of-project-animal-attack/6241717012135936">bug game</a>.
+    </div>
+    <h3>output</h3>
+    <div class="code">// informal data structure detection
+        
+{
+    prefixDict: { 
+        body: [ 'bodyX', 'bodyY', 'bodyW', 'bodyHW', 'bodyH' ],
+        bite: [ 'biteMax', 'biteMin', 'biteSpd' ] 
+    },
+    suffixDict: { 
+        XA: [ 'minXA', 'maxXA' ],
+        XB: [ 'minXB', 'maxXB' ],
+        YA: [ 'minYA', 'maxYA' ],
+        YB: [ 'minYB', 'maxYB' ],
+        Pos: [ 'xPos', 'yPos', 'endPos' ] 
+    } 
+}
+
+// redundant if statements
+        
+"eat === 0" = "eat === 0"
+"btn === false" = "btn === false"
+"mouseY >= btnMinY && mouseY <= btnMaxY" = "mouseY >= btnMinY && mouseY <= btnMaxY"
+"mouseX >= btnMinX && mouseX <= btnMaxX" = "mouseX >= btnMinX && mouseX <= btnMaxX"
+
+// redundant binary expressions (used as arguments)
+        
+"60 - yPos + 10" = "60 - yPos + 10"
+"yPos - i * 8" = "yPos - i * 8"
+"WH / 2" = "WH / 2"
+"98 - yPos + 10" = "98 - yPos + 10"
+"xPos + 4 * 27 + 22" = "xPos + 4 * 27 + 22"
+"yPos - 4 * 8" = "yPos - 4 * 8"
+"yPos - 4 * 8" = "yPos - 4 * 8"
+
+// find all drawing functions
+// "smell" indicates a function defined inside of another function when it should be global
+        
+name = score (parent = draw) - smell
+name = obj (parent = draw) - smell
+"obj" is a drawing function
+name = restart (parent = draw) - smell
+name = mouseClicked (parent = button) - smell
+name = button (parent = draw) - smell
+"button" is a drawing function
+name = spider (parent = draw) - smell
+"spider" is a drawing function
+name = keyPressed (parent = draw) - smell
+name = draw (parent = undefined)
+"draw" is a drawing function
+
+// find mutated variables used in animation
+        
+mutated variables = working,randomErrorValue,randomError,error,yPos,pass,xPos, ...
+        
+// no animations detected because right now we don't check if these
+// mutated variables are inside of expressions which are used in drawing commands
+    </div>
 </div>
 
 </body>
