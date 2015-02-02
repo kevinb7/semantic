@@ -56,13 +56,9 @@ We're trying to do the following things with this type of analysis:
 
  */
 
-import { traverse } from 'estraverse'
-import esutils from 'esutils'
+import estraverse from 'estraverse'
 
-
-esutils.ast.isFunction = function(node) {
-    return node.type === "FunctionExpression" || node.type === "FunctionDeclaration";
-};
+var assert = console.assert;
 
 
 var getFunctionName = function(node, parent) {
@@ -83,20 +79,78 @@ var specialFunctions = [
     "keyPressed", "keyReleased"
 ];
 
+
+// NOTE: endShape() require beginShape() to be called first
+// A good pratice is to call both in the same scope
+var drawingFunctions = [
+    "rect", "line", "ellipse", "point", "quad", "triangle", "arc", "endShape",
+    "image"
+];
+
+// TODO: grab all of the images are that are loaded
+// TODO: try to determine which images are actually drawn
+// in the bug_game example, the "bug" variable is set to store the OhNoes image
+// this global variable is never re-assigned, so when it is used, we know it's
+// the OhNoes image
+
+// differentiate between global variables which are constant vs those that change
+// global variables can only be changed inside event handlers or the "draw" function
+// (or functions which those special functions call)
+
+var isDrawingFunction = ast => {
+    
+    var result = false;
+
+    assert(/Function/.test(ast.type));
+
+    estraverse.traverse(ast.body, {
+        enter(node, parent) {
+            // TODO: it's an anonymous function that's being used by forEach
+            // or something like that then don't skip it
+            if (/Function/.test(node.type)) {
+                this.skip();
+            }
+        },
+        leave(node, parent) {
+            
+            if (node.type === "CallExpression") {
+                if (node.callee.type === "Identifier") {
+                    // TODO: add functions we've identified as drawing functions to this list
+                    if (drawingFunctions.includes(node.callee.name)) {
+                        result = true;
+                        this.break();
+                    }
+                }
+            }
+        }
+    });
+    
+    return result;
+};
+
 var findFunctionDefinitions = ast => {
     
     // TODO: handle anonymous functions
     var scopes = [];
+    
+    // TODO: for each function definition we find we'd like to output an object containing:
+    // - name
+    // - node 
+    // - parent function object
 
-    traverse(ast, {
+    estraverse.traverse(ast, {
         enter: (node, parent) => {
-            if (esutils.ast.isFunction(node)) {
-                scopes.push(getFunctionName(node, parent));
+            if (node.type === "FunctionExpression") {
+                if (parent.type === "VariableDeclarator") {
+                    scopes.push(parent.id.name);
+                } else if (parent.type === "AssignmentExpression") {
+                    scopes.push(parent.left.name);
+                }
             }
         },
         leave: (node, parent) => {
 
-            if (esutils.ast.isFunction(node)) {
+            if (/Function/.test(node.type)) {
                 scopes.pop();
             }
             
@@ -105,6 +159,9 @@ var findFunctionDefinitions = ast => {
                 var scopeName = scopes[scopes.length - 1];
                 var smell = !!scopeName ? " - smell" : "";
                 console.log(`function, name = ${name} (${scopeName})${smell}`);
+                if (isDrawingFunction(node)) {
+                    console.log(`"${name}" is a drawing function`);
+                }
             }
         }
     });

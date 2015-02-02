@@ -5,8 +5,9 @@ import { findGlobals } from './variables';
 import { informalObjects } from './informal'
 import { findClones } from './clones';
 import { findFunctionDefinitions } from './quality';
+import { findMutatedVariables, findUsesOfVariable } from './animation';
 
-var filename = 'bug_game.js';
+var filename = 'animated_shapes.js';
 var code = fs.readFileSync('corpus/' + filename);
 var ast = esprima.parse(code);
 
@@ -18,3 +19,8 @@ console.log(objects);
 findClones(ast);
 
 findFunctionDefinitions(ast);
+
+var mutatedVariables = findMutatedVariables(ast, globals);
+console.log(`mutated variables = ${mutatedVariables}`);
+
+findUsesOfVariable(ast, "ballX");

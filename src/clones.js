@@ -52,6 +52,9 @@ var findClones = ast => {
     console.log("redundant if statements");
     for (let [first, second] of cartesianIterable(ifNodes, ifNodes)) {
         // TODO replace _.isEqual with a custom compare function which ignores location data
+        // TODO: look at complexity of the statement
+        // if it's a single function call or a single logic operator then it's okay
+        // but if there's a lot of logic or math that's repeated then it should probably have its own function
         if (_.isEqual(first.test, second.test)) {
             console.log(`"${generate(first.test)}" = "${generate(second.test)}"`);
         }
